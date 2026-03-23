@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notes App</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #000;
+  color: white;
+}
+
+/* Header */
+.header {
+  padding: 15px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Search */
+.search {
+  margin: 10px;
+  padding: 10px;
+  width: 90%;
+  border-radius: 10px;
+  border: none;
+}
+
+/* Note card */
+.note {
+  background: #1c1c1c;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 15px;
+}
+
+/* Floating button */
+.add-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: orange;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  font-size: 30px;
+  border: none;
+}
+
+/* Editor */
+.editor {
+  display: none;
+  flex-direction: column;
+  height: 100vh;
+}
+
+textarea {
+  flex: 1;
+  background: #000;
+  color: white;
+  border: none;
+  padding: 15px;
+  font-size: 18px;
+}
+
+/* Buttons */
+.top-btns {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+button {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LIST -->
+<div id="list">
+  <div class="header">Notes</div>
+  <input class="search" placeholder="Search..." oninput="searchNote(this.value)">
+  <div id="notes"></div>
+</div>
+
+<button class="add-btn" onclick="newNote()">+</button>
+
+<!-- EDITOR -->
+<div id="editor" class="editor">
+  <div class="top-btns">
+    <button onclick="back()">⬅ Back</button>
+    <button onclick="saveNote()">💾 Save</button>
+    <button onclick="toggleFav()">⭐</button>
+  </div>
+  <textarea id="text"></textarea>
+</div>
+
+<script>
+let notes = JSON.parse(localStorage.getItem("notes") || "[]");
+let current = -1;
+
+function showNotes(list = notes) {
+  let html = "";
+  list.forEach((n,i)=>{
+    html += `<div class="note" onclick="openNote(${i})">
+      ${n.text.substring(0,50)}<br>
+      <small>${n.date} ${n.fav ? "⭐" : ""}</small>
+    </div>`;
+  });
+  document.getElementById("notes").innerHTML = html;
+}
+
+function newNote() {
+  current = notes.length;
+  notes.push({text:"", date:new Date().toLocaleString(), fav:false});
+  openEditor();
+}
+
+function openNote(i) {
+  current = i;
+  document.getElementById("text").value = notes[i].text;
+  openEditor();
+}
+
+function openEditor() {
+  document.getElementById("list").style.display = "none";
+  document.getElementById("editor").style.display = "flex";
+}
+
+function saveNote() {
+  notes[current].text = document.getElementById("text").value;
+  notes[current].date = new Date().toLocaleString();
+  localStorage.setItem("notes", JSON.stringify(notes));
+  alert("Saved!");
+}
+
+function toggleFav() {
+  notes[current].fav = !notes[current].fav;
+  saveNote();
+}
+
+function back() {
+  saveNote();
+  document.getElementById("editor").style.display = "none";
+  document.getElementById("list").style.display = "block";
+  showNotes();
+}
+
+function searchNote(q) {
+  let filtered = notes.filter(n => n.text.toLowerCase().includes(q.toLowerCase()));
+  showNotes(filtered);
+}
+
+showNotes();
+</script>
+
+</body>
+</html>
